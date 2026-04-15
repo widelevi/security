@@ -1,5 +1,0 @@
-{
-  "installCommand": "npm install && cd securityapp && npm install",
-  "buildCommand": "cd securityapp && npm run build",
-  "outputDirectory": "securityapp/.next"
-}
