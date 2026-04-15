@@ -1,0 +1,6 @@
+{
+  "buildCommand": "cd securityapp && npm install && npm run build",
+  "outputDirectory": "securityapp/.next",
+  "installCommand": "echo skip",
+  "framework": "nextjs"
+}
