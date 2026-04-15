@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState, useRef } from "react";
+import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import type { Location } from "@/lib/rotation-engine";
 
@@ -42,7 +43,9 @@ function sr(n: number): number {
 }
 
 function useIsMobile(): boolean {
-  const [mobile, setMobile] = useState(false);
+  const [mobile, setMobile] = useState(() =>
+    typeof window !== "undefined" ? window.matchMedia("(max-width: 639px)").matches : false
+  );
   useEffect(() => {
     const mq = window.matchMedia("(max-width: 639px)");
     setMobile(mq.matches);
@@ -461,8 +464,13 @@ export default function EggLottery({
 }: EggLotteryProps) {
   const [stage, setStage] = useState<EggStage>("idle");
   const revealedRef = useRef(false);
+  const [portalReady, setPortalReady] = useState(false);
   const mobile = useIsMobile();
   const compact = totalGuards >= 5 || (mobile && totalGuards >= 3);
+
+  useEffect(() => {
+    setPortalReady(true);
+  }, []);
 
   useEffect(() => {
     if (!lotteryResults) {
@@ -500,9 +508,9 @@ export default function EggLottery({
 
   const revealDelay = mobile ? totalGuards * 0.3 : totalGuards * 0.45;
 
-  return (
+  const overlay = (
     <motion.div
-      className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto"
+      className="fixed inset-0 z-[200] flex items-start justify-center overflow-y-auto"
       style={{ paddingTop: mobile ? 12 : 32, paddingBottom: mobile ? 12 : 32 }}
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
@@ -682,4 +690,10 @@ export default function EggLottery({
       </motion.div>
     </motion.div>
   );
+
+  if (!portalReady || typeof document === "undefined") {
+    return null;
+  }
+
+  return createPortal(overlay, document.body);
 }

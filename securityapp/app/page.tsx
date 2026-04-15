@@ -20,6 +20,54 @@ function isFreeLike(station: Location): boolean {
   return station === "\u05D7\u05D5\u05E4\u05E9\u05D9" || station === "\u05DC\u05D9\u05D5\u05D5\u05D9";
 }
 
+function RotationTimelineTable({
+  rows,
+  LOCATION_BOOKMARK_CLASSES,
+}: {
+  rows: RotationRow[];
+  LOCATION_BOOKMARK_CLASSES: Record<Location, string>;
+}) {
+  return (
+    <div className="-mx-2 overflow-x-auto rounded-lg border border-cyan-300/20 max-[639px]:max-h-[min(52vh,340px)] max-[639px]:overflow-y-auto sm:mx-0 sm:rounded-xl">
+      <table className="w-full min-w-[380px] border-collapse text-[11px] sm:min-w-[420px] sm:text-sm">
+        <thead className="bg-cyan-500/10 text-cyan-200">
+          <tr>
+            <th className="px-2 py-1.5 text-left font-semibold sm:px-3 sm:py-3">Time</th>
+            <th className="px-2 py-1.5 text-left font-semibold sm:px-3 sm:py-3">Station</th>
+            <th className="px-2 py-1.5 text-left font-semibold sm:px-3 sm:py-3">On Duty</th>
+          </tr>
+        </thead>
+        <tbody>
+          {rows.length === 0 ? (
+            <tr>
+              <td colSpan={3} className="px-3 py-3 text-center text-cyan-100/70 sm:py-6 sm:text-sm">
+                Press <span className="font-semibold text-cyan-300">Calculate</span> to view schedule.
+              </td>
+            </tr>
+          ) : (
+            rows.map((row, index) => (
+              <tr
+                key={`${row.timeRange}-${index}`}
+                className="border-t border-cyan-300/10 odd:bg-[#0c182e]/70 even:bg-[#0a1528]/70"
+              >
+                <td className="px-2 py-1.5 sm:px-3 sm:py-3 whitespace-nowrap">{row.timeRange}</td>
+                <td className="px-2 py-1.5 sm:px-3 sm:py-3">
+                  <div
+                    className={`rounded border border-cyan-200/30 bg-cyan-400/10 px-1 py-0.5 text-center sm:rounded-lg sm:px-2 sm:py-1 ${LOCATION_BOOKMARK_CLASSES[row.station]}`}
+                  >
+                    {row.station}
+                  </div>
+                </td>
+                <td className="px-2 py-1.5 text-center sm:px-3 sm:py-3">{row.guardsOnDuty}</td>
+              </tr>
+            ))
+          )}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
 export default function Home() {
   const [shiftType, setShiftType] = useState<ShiftType>("morning");
   const [longGuards, setLongGuards] = useState<number>(3);
@@ -69,6 +117,12 @@ export default function Home() {
       setLotteryResults(null);
     }
   }, [useLottery]);
+
+  useEffect(() => {
+    if (!isAllGuardsIdentical) {
+      setUseLottery(false);
+    }
+  }, [isAllGuardsIdentical]);
 
   const recommendedStart = useMemo(() => {
     try {
@@ -201,43 +255,43 @@ export default function Home() {
   }
 
   return (
-    <main className="min-h-screen min-h-dvh px-3 py-4 text-cyan-100 sm:px-4 sm:py-8" style={{contain: 'layout'}}>
+    <main className="min-h-screen min-h-dvh px-2 py-2 text-cyan-100 max-[480px]:px-2 max-[480px]:py-2 sm:px-4 sm:py-8">
       <div className="mx-auto w-full max-w-5xl">
-        <div className="rounded-2xl border border-cyan-400/20 bg-[#0b1427]/95 p-3 shadow-sm sm:p-5 md:p-8">
-          <header className="mb-4 sm:mb-6">
-            <h1 className="text-xl font-bold tracking-tight text-cyan-200 sm:text-2xl md:text-3xl">Security Rotation Console</h1>
-            <p className="mt-1.5 text-xs text-cyan-100/70 sm:text-sm">
+        <div className="rounded-2xl border border-cyan-400/20 bg-[#0b1427]/95 p-2 shadow-sm max-[480px]:rounded-xl max-[480px]:p-2 sm:p-5 md:p-8">
+          <header className="mb-2 sm:mb-6">
+            <h1 className="text-lg font-bold tracking-tight text-cyan-200 sm:text-2xl md:text-3xl">Security Rotation Console</h1>
+            <p className="mt-1 text-[11px] text-cyan-100/70 max-[380px]:line-clamp-2 sm:mt-1.5 sm:text-sm sm:line-clamp-none">
               Shift planner for guards with dynamic 5/4/3 manpower transitions.
             </p>
           </header>
 
-          <section className="grid grid-cols-1 gap-3 md:grid-cols-2">
-            <label className="rounded-2xl border border-cyan-300/15 bg-white/5 p-3">
+          <section className="grid grid-cols-1 gap-2 md:grid-cols-2 md:gap-3">
+            <label className="rounded-xl border border-cyan-300/15 bg-white/5 p-2 sm:rounded-2xl sm:p-3">
               <span className="mb-1.5 block text-xs text-cyan-100/80 sm:text-sm sm:mb-2">Shift Type</span>
               <select
                 value={shiftType}
                 onChange={(e) => setShiftType(e.target.value as ShiftType)}
-                className="w-full rounded-xl border border-cyan-300/30 bg-[#0b1427] px-3 py-2.5 text-base outline-none ring-cyan-300 transition focus:ring-2"
+                className="w-full rounded-lg border border-cyan-300/30 bg-[#0b1427] px-2.5 py-2 text-base outline-none ring-cyan-300 transition focus:ring-2 sm:rounded-xl sm:px-3 sm:py-2.5"
               >
                 <option value="morning">Morning</option>
                 <option value="night">Night</option>
               </select>
             </label>
 
-            <label className="rounded-2xl border border-cyan-300/15 bg-white/5 p-3">
+            <label className="rounded-xl border border-cyan-300/15 bg-white/5 p-2 sm:rounded-2xl sm:p-3">
               <span className="mb-1.5 block text-xs text-cyan-100/80 sm:text-sm sm:mb-2">Your Shift Length</span>
               <select
                 value={userLength}
                 onChange={(e) => setUserLength(e.target.value as GuardLength)}
-                className="w-full rounded-xl border border-cyan-300/30 bg-[#0b1427] px-3 py-2.5 text-base outline-none ring-cyan-300 transition focus:ring-2"
+                className="w-full rounded-lg border border-cyan-300/30 bg-[#0b1427] px-2.5 py-2 text-base outline-none ring-cyan-300 transition focus:ring-2 sm:rounded-xl sm:px-3 sm:py-2.5"
               >
                 <option value="long">Long</option>
                 <option value="short">Short</option>
               </select>
             </label>
 
-            <div className="md:col-span-2 flex flex-wrap items-start gap-2 sm:gap-3">
-              <label className="flex-1 min-w-[7rem] rounded-2xl border border-cyan-300/15 bg-white/5 p-3">
+            <div className="md:col-span-2 flex flex-wrap items-start gap-1.5 sm:gap-3">
+              <label className="flex-1 min-w-[6.5rem] rounded-xl border border-cyan-300/15 bg-white/5 p-2 sm:min-w-[7rem] sm:rounded-2xl sm:p-3">
                 <span className="mb-1.5 block text-xs text-cyan-100/80 sm:text-sm sm:mb-2">Long Guards</span>
                 <input
                   type="number"
@@ -245,11 +299,11 @@ export default function Home() {
                   max={5}
                   value={longGuards}
                   onChange={(e) => setLongGuards(Number(e.target.value))}
-                  className="w-full rounded-xl border border-cyan-300/30 bg-[#0b1427] px-3 py-2.5 text-base outline-none ring-cyan-300 transition focus:ring-2"
+                  className="w-full rounded-lg border border-cyan-300/30 bg-[#0b1427] px-2.5 py-2 text-base outline-none ring-cyan-300 transition focus:ring-2 sm:rounded-xl sm:px-3 sm:py-2.5"
                 />
               </label>
 
-              <label className="flex-1 min-w-[7rem] rounded-2xl border border-cyan-300/15 bg-white/5 p-3">
+              <label className="flex-1 min-w-[6.5rem] rounded-xl border border-cyan-300/15 bg-white/5 p-2 sm:min-w-[7rem] sm:rounded-2xl sm:p-3">
                 <span className="mb-1.5 block text-xs text-cyan-100/80 sm:text-sm sm:mb-2">Short Guards</span>
                 <input
                   type="number"
@@ -257,12 +311,12 @@ export default function Home() {
                   max={5}
                   value={shortGuards}
                   onChange={(e) => setShortGuards(Number(e.target.value))}
-                  className="w-full rounded-xl border border-cyan-300/30 bg-[#0b1427] px-3 py-2.5 text-base outline-none ring-cyan-300 transition focus:ring-2"
+                  className="w-full rounded-lg border border-cyan-300/30 bg-[#0b1427] px-2.5 py-2 text-base outline-none ring-cyan-300 transition focus:ring-2 sm:rounded-xl sm:px-3 sm:py-2.5"
                 />
               </label>
 
               {showAfternoonGuardsInput && (
-                <label className="flex-1 min-w-[7rem] rounded-2xl border border-cyan-300/15 bg-white/5 p-3">
+                <label className="flex-1 min-w-[6.5rem] rounded-xl border border-cyan-300/15 bg-white/5 p-2 sm:min-w-[7rem] sm:rounded-2xl sm:p-3">
                   <span className="mb-1.5 block text-xs text-cyan-100/80 sm:text-sm sm:mb-2">Afternoon</span>
                   <input
                     type="number"
@@ -270,29 +324,29 @@ export default function Home() {
                     max={5}
                     value={afternoonIncomingGuards}
                     onChange={(e) => setAfternoonIncomingGuards(Number(e.target.value))}
-                    className="w-full rounded-xl border border-cyan-300/30 bg-[#0b1427] px-3 py-2.5 text-base outline-none ring-cyan-300 transition focus:ring-2"
+                    className="w-full rounded-lg border border-cyan-300/30 bg-[#0b1427] px-2.5 py-2 text-base outline-none ring-cyan-300 transition focus:ring-2 sm:rounded-xl sm:px-3 sm:py-2.5"
                   />
                 </label>
               )}
             </div>
 
             {isAllGuardsIdentical && (
-              <label className="w-full rounded-2xl border border-cyan-300/15 bg-white/5 p-3 md:col-span-2 flex items-center gap-3 cursor-pointer touch-manipulation select-none">
+              <label className="w-full rounded-xl border border-cyan-300/15 bg-white/5 p-2 md:col-span-2 flex items-center gap-2 cursor-pointer touch-manipulation select-none sm:rounded-2xl sm:gap-3 sm:p-3">
                 <input
                   type="checkbox"
                   checked={useLottery}
                   onChange={(e) => setUseLottery(e.target.checked)}
                   className="h-5 w-5 min-h-[1.25rem] min-w-[1.25rem] shrink-0 rounded border-cyan-300/30 bg-[#0b1427] cursor-pointer accent-cyan-400"
                 />
-                <div className="flex-1">
-                  <span className="block text-sm font-semibold text-cyan-100">Roulette Mode</span>
-                  <span className="block text-xs text-cyan-100/60">Randomly assign positions for each time slot</span>
+                <div className="flex-1 min-w-0">
+                  <span className="block text-xs font-semibold text-cyan-100 sm:text-sm">Roulette Mode</span>
+                  <span className="block text-[10px] text-cyan-100/60 sm:text-xs">Random positions (needs Short=0 for morning/night)</span>
                 </div>
               </label>
             )}
 
             {useLottery && isAllGuardsIdentical && (
-              <div className="w-full rounded-2xl border border-cyan-300/15 bg-white/5 p-3 sm:p-4 md:col-span-2">
+              <div className="w-full rounded-xl border border-cyan-300/15 bg-white/5 p-2 sm:rounded-2xl sm:p-4 md:col-span-2">
                 <span className="mb-2 block text-sm font-semibold text-cyan-100 sm:mb-3">
                   Guard Names <span className="font-normal text-cyan-100/50">(optional)</span>
                 </span>
@@ -315,9 +369,9 @@ export default function Home() {
               </div>
             )}
 
-            <label className={`w-full rounded-2xl border border-cyan-300/15 bg-white/5 p-3 md:mx-auto md:w-fit md:col-span-2 ${useLottery ? "opacity-50 pointer-events-none" : ""}`}>
-              <span className="mb-1.5 block text-xs text-cyan-100/80 sm:text-sm sm:mb-2">Starting Position</span>
-              <div className="grid grid-cols-3 gap-1.5 sm:flex sm:flex-wrap sm:justify-center sm:gap-2 md:gap-3 pb-1">
+            <label className={`w-full rounded-xl border border-cyan-300/15 bg-white/5 p-2 md:mx-auto md:w-fit md:col-span-2 sm:rounded-2xl sm:p-3 ${useLottery ? "opacity-50 pointer-events-none" : ""}`}>
+              <span className="mb-1 block text-[11px] text-cyan-100/80 sm:text-sm sm:mb-2">Starting Position</span>
+              <div className="grid grid-cols-3 gap-1 sm:flex sm:flex-wrap sm:justify-center sm:gap-2 md:gap-3 pb-0.5">
                 {LOCATION_OPTIONS.map((loc) => {
                   const isDisabled =
                     (loc === "\u05E8\u05D7\u05D1\u05D4" && isPlazaDisabled) || (loc === "\u05DC\u05D9\u05D5\u05D5\u05D9" && isEscortDisabled);
@@ -339,7 +393,7 @@ export default function Home() {
                             : "\u05DC\u05D9\u05D5\u05D5\u05D9 \u05D6\u05DE\u05D9\u05DF \u05E8\u05E7 \u05DB\u05E9\u05D9\u05E9 4 \u05D0\u05D5 5 \u05E9\u05D5\u05DE\u05E8\u05D9\u05DD \u05D1\u05EA\u05D7\u05D9\u05DC\u05EA \u05D4\u05DE\u05E9\u05DE\u05E8\u05EA"
                           : undefined
                       }
-                      className={`relative rounded-xl border px-2.5 py-2.5 text-sm focus:outline-none active:scale-95 sm:min-w-[5.5rem] sm:px-3 sm:py-3 md:min-w-[6.75rem] md:px-4 md:text-base ${
+                      className={`relative rounded-lg border px-1.5 py-2 text-xs focus:outline-none active:scale-95 sm:min-w-[5.5rem] sm:rounded-xl sm:px-3 sm:py-3 sm:text-sm md:min-w-[6.75rem] md:px-4 md:text-base ${
                         isDisabled
                           ? "cursor-not-allowed border-zinc-600/70 bg-zinc-700/25 text-zinc-400"
                           : isSelected
@@ -364,15 +418,15 @@ export default function Home() {
           <button
             type="button"
             onClick={handleCalculate}
-            className="mt-4 w-full touch-manipulation rounded-2xl border border-cyan-200/50 bg-cyan-400/20 px-4 py-3 text-sm font-semibold text-cyan-100 shadow-sm hover:bg-cyan-300/25 active:scale-[0.98] sm:w-auto sm:px-6"
+            className="mt-2 w-full touch-manipulation rounded-xl border border-cyan-200/50 bg-cyan-400/20 px-4 py-2.5 text-sm font-semibold text-cyan-100 shadow-sm hover:bg-cyan-300/25 active:scale-[0.98] sm:mt-4 sm:w-auto sm:rounded-2xl sm:py-3 sm:px-6"
           >
             Calculate Rotation
           </button>
 
-          <div className="mt-4 grid gap-2 grid-cols-2 sm:grid-cols-3 sm:gap-3">
-            <div className="col-span-2 sm:col-span-2 rounded-2xl bg-gradient-to-br from-cyan-500/15 via-slate-950/70 to-emerald-500/10 p-3 ring-1 ring-cyan-300/15 sm:p-5">
-              <p className="text-[10px] uppercase tracking-[0.2em] text-cyan-100/60 sm:text-xs">Finishes Free</p>
-              <p className="mt-1.5 text-lg font-extrabold text-cyan-100 leading-tight text-center sm:mt-3 sm:text-3xl md:text-4xl">
+          <div className="mt-2 flex gap-2 sm:mt-4 sm:grid sm:grid-cols-3 sm:gap-3">
+            <div className="min-w-0 flex-1 rounded-xl bg-gradient-to-br from-cyan-500/15 via-slate-950/70 to-emerald-500/10 p-2 ring-1 ring-cyan-300/15 sm:col-span-2 sm:rounded-2xl sm:p-5">
+              <p className="text-[9px] uppercase tracking-[0.18em] text-cyan-100/60 sm:text-xs">Finishes Free</p>
+              <p className="mt-1 text-base font-extrabold text-cyan-100 leading-tight text-center sm:mt-3 sm:text-3xl md:text-4xl">
                 {startsThatFinishFree.length > 0 ? (
                   startsThatFinishFree.map((station, index) => (
                     <span key={station}>
@@ -387,9 +441,9 @@ export default function Home() {
                 )}
               </p>
             </div>
-            <div className="col-span-2 sm:col-span-1 rounded-2xl bg-[#06121f] p-3 ring-1 ring-cyan-300/10">
-              <p className="text-[10px] uppercase tracking-[0.2em] text-cyan-100/50 sm:text-xs">Field Posts</p>
-              <p className="mt-1.5 text-lg font-semibold text-cyan-100 sm:mt-3 sm:text-3xl">{rows.length > 0 ? totalFieldPosts : "N/A"}</p>
+            <div className="w-[4.75rem] shrink-0 rounded-xl bg-[#06121f] p-2 ring-1 ring-cyan-300/10 sm:col-span-1 sm:w-auto sm:rounded-2xl sm:p-4">
+              <p className="text-[9px] uppercase tracking-[0.18em] text-cyan-100/50 sm:text-xs">Field</p>
+              <p className="mt-0.5 text-center text-lg font-semibold text-cyan-100 sm:mt-3 sm:text-3xl">{rows.length > 0 ? totalFieldPosts : "—"}</p>
             </div>
           </div>
 
@@ -432,44 +486,20 @@ export default function Home() {
           </section>
         )}
 
-        <section className="mt-3 rounded-2xl border border-cyan-400/20 bg-[#0b1427]/95 p-3 shadow-sm sm:mt-6 sm:p-6">
+        <section className="mt-2 hidden rounded-2xl border border-cyan-400/20 bg-[#0b1427]/95 p-3 shadow-sm sm:mt-6 sm:block sm:p-6">
           <h2 className="mb-2 text-base font-semibold text-cyan-200 sm:mb-3 sm:text-lg">Rotation Timeline</h2>
-          <div className="-mx-3 sm:mx-0 overflow-x-auto rounded-xl border border-cyan-300/20">
-            <table className="w-full min-w-[420px] border-collapse text-xs sm:text-sm">
-              <thead className="bg-cyan-500/10 text-cyan-200">
-                <tr>
-                  <th className="px-2 py-2 text-left font-semibold sm:px-3 sm:py-3">Time</th>
-                  <th className="px-2 py-2 text-left font-semibold sm:px-3 sm:py-3">Station</th>
-                  <th className="px-2 py-2 text-left font-semibold sm:px-3 sm:py-3">On Duty</th>
-                </tr>
-              </thead>
-              <tbody>
-                {rows.length === 0 ? (
-                  <tr>
-                    <td colSpan={3} className="px-3 py-4 text-center text-cyan-100/70 text-xs sm:py-6 sm:text-sm">
-                      Press <span className="font-semibold text-cyan-300">Calculate</span> to view schedule.
-                    </td>
-                  </tr>
-                ) : (
-                  rows.map((row, index) => (
-                    <tr
-                      key={`${row.timeRange}-${index}`}
-                      className="border-t border-cyan-300/10 odd:bg-[#0c182e]/70 even:bg-[#0a1528]/70"
-                    >
-                      <td className="px-2 py-2 sm:px-3 sm:py-3 whitespace-nowrap">{row.timeRange}</td>
-                      <td className="px-2 py-2 sm:px-3 sm:py-3">
-                        <div className={`rounded-md border border-cyan-200/30 bg-cyan-400/10 px-1.5 py-0.5 text-center sm:rounded-lg sm:px-2 sm:py-1 ${LOCATION_BOOKMARK_CLASSES[row.station]}`}>
-                          {row.station}
-                        </div>
-                      </td>
-                      <td className="px-2 py-2 sm:px-3 sm:py-3 text-center">{row.guardsOnDuty}</td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
+          <RotationTimelineTable rows={rows} LOCATION_BOOKMARK_CLASSES={LOCATION_BOOKMARK_CLASSES} />
         </section>
+
+        <details className="mt-2 rounded-xl border border-cyan-400/20 bg-[#0b1427]/95 shadow-sm open:bg-[#0b1427]/95 sm:hidden group">
+          <summary className="cursor-pointer list-none px-3 py-2.5 text-sm font-semibold text-cyan-200 [&::-webkit-details-marker]:hidden flex items-center justify-between gap-2">
+            <span>Rotation Timeline</span>
+            <span className="text-cyan-400/50 text-xs transition-transform group-open:rotate-180">▼</span>
+          </summary>
+          <div className="border-t border-cyan-400/10 px-2 pb-2 pt-1">
+            <RotationTimelineTable rows={rows} LOCATION_BOOKMARK_CLASSES={LOCATION_BOOKMARK_CLASSES} />
+          </div>
+        </details>
       </div>
     </main>
   );
