@@ -109,7 +109,8 @@ export default function Home() {
   function handleCalculate() {
     setError("");
     try {
-      if (useLottery && guardNames.some(name => name.trim())) {
+      // Run egg lottery whenever Roulette Mode is on (names optional — defaults to Guard 1, 2, …).
+      if (useLottery && isAllGuardsIdentical) {
         setLotteryResults(null);
         setShowAnimation(true);
         setTimeout(() => {
@@ -276,12 +277,12 @@ export default function Home() {
             </div>
 
             {isAllGuardsIdentical && (
-              <label className="w-full rounded-2xl border border-cyan-300/15 bg-white/5 p-3 md:col-span-2 flex items-center gap-3 cursor-pointer">
+              <label className="w-full rounded-2xl border border-cyan-300/15 bg-white/5 p-3 md:col-span-2 flex items-center gap-3 cursor-pointer touch-manipulation select-none">
                 <input
                   type="checkbox"
                   checked={useLottery}
                   onChange={(e) => setUseLottery(e.target.checked)}
-                  className="h-5 w-5 rounded border-cyan-300/30 bg-[#0b1427] cursor-pointer accent-cyan-400"
+                  className="h-5 w-5 min-h-[1.25rem] min-w-[1.25rem] shrink-0 rounded border-cyan-300/30 bg-[#0b1427] cursor-pointer accent-cyan-400"
                 />
                 <div className="flex-1">
                   <span className="block text-sm font-semibold text-cyan-100">Roulette Mode</span>
@@ -292,7 +293,9 @@ export default function Home() {
 
             {useLottery && isAllGuardsIdentical && (
               <div className="w-full rounded-2xl border border-cyan-300/15 bg-white/5 p-3 sm:p-4 md:col-span-2">
-                <span className="mb-2 block text-sm font-semibold text-cyan-100 sm:mb-3">Guard Names</span>
+                <span className="mb-2 block text-sm font-semibold text-cyan-100 sm:mb-3">
+                  Guard Names <span className="font-normal text-cyan-100/50">(optional)</span>
+                </span>
                 <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
                   {Array.from({ length: totalGuards }).map((_, index) => (
                     <input
@@ -361,7 +364,7 @@ export default function Home() {
           <button
             type="button"
             onClick={handleCalculate}
-            className="mt-4 w-full rounded-2xl border border-cyan-200/50 bg-cyan-400/20 px-4 py-3 text-sm font-semibold text-cyan-100 shadow-sm hover:bg-cyan-300/25 active:scale-[0.98] sm:w-auto sm:px-6"
+            className="mt-4 w-full touch-manipulation rounded-2xl border border-cyan-200/50 bg-cyan-400/20 px-4 py-3 text-sm font-semibold text-cyan-100 shadow-sm hover:bg-cyan-300/25 active:scale-[0.98] sm:w-auto sm:px-6"
           >
             Calculate Rotation
           </button>
