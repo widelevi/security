@@ -1,6 +1,5 @@
 {
-  "installCommand": "cd securityapp && npm install",
+  "installCommand": "npm install && cd securityapp && npm install",
   "buildCommand": "cd securityapp && npm run build",
-  "outputDirectory": "securityapp/.next",
-  "framework": "nextjs"
+  "outputDirectory": "securityapp/.next"
 }
