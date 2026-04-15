@@ -583,7 +583,7 @@ export default function EggLottery({
       {/* Backdrop */}
       <div
         className="absolute inset-0"
-        style={{ background: "rgba(0,0,0,0.93)", backdropFilter: "blur(14px)" }}
+        style={{ background: "rgba(0,0,0,0.96)" }}
       />
 
       <FloatingSpecks />

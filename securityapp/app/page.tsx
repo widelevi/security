@@ -215,7 +215,7 @@ export default function Home() {
   return (
     <main className="min-h-screen px-4 py-8 text-cyan-100" style={{contain: 'layout'}}>
       <div className="mx-auto w-full max-w-5xl">
-        <div className="rounded-2xl border border-cyan-400/20 bg-white/5 p-5 shadow-sm backdrop-blur-sm md:p-8">
+        <div className="rounded-2xl border border-cyan-400/20 bg-[#0b1427]/95 p-5 shadow-sm md:p-8">
           <header className="mb-6">
             <h1 className="text-2xl font-bold tracking-tight text-cyan-200 md:text-3xl">Security Rotation Console</h1>
             <p className="mt-2 text-sm text-cyan-100/70">
@@ -437,7 +437,7 @@ export default function Home() {
 
         {/* Show lottery results after accepting (when modal is closed) */}
         {lotteryResults && Object.keys(lotteryResults).length > 0 && !showAnimation && (
-          <section className="mt-6 rounded-3xl border border-emerald-400/20 bg-gradient-to-br from-slate-950/80 via-slate-950/70 to-cyan-950/90 p-4 shadow-sm backdrop-blur-sm md:p-6">
+          <section className="mt-6 rounded-3xl border border-emerald-400/20 bg-gradient-to-br from-slate-950/80 via-slate-950/70 to-cyan-950/90 p-4 shadow-sm md:p-6">
             <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
               <div>
                 <h2 className="text-xl font-semibold text-emerald-200">🎯 Guard Finish Posts</h2>
@@ -484,7 +484,7 @@ export default function Home() {
           </section>
         )}
 
-        <section className="mt-6 rounded-2xl border border-cyan-400/20 bg-white/5 p-4 shadow-sm backdrop-blur-sm md:p-6">
+        <section className="mt-6 rounded-2xl border border-cyan-400/20 bg-[#0b1427]/95 p-4 shadow-sm md:p-6">
           <h2 className="mb-3 text-lg font-semibold text-cyan-200">Rotation Timeline</h2>
           <p className="mb-4 text-sm text-cyan-100/70">Use this schedule as the operational timeline; the finish-post summary above is the priority output.</p>
           <div className="overflow-x-auto rounded-xl border border-cyan-300/20">

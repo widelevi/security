@@ -20,8 +20,17 @@
 }
 
 html {
+  background: #050811;
+}
+
+html::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
   background: linear-gradient(to bottom, #050811, #090f1f, #050811);
-  background-attachment: fixed;
+  will-change: transform;          /* promoted to its own GPU layer */
+  pointer-events: none;
 }
 
 body {
