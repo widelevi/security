@@ -1,0 +1,10 @@
+{
+  "name": "security",
+  "private": true,
+  "description": "Repo root for Vercel: Next.js app is in securityapp/. Root lists next so Vercel can detect the framework when Root Directory is the repo root.",
+  "dependencies": {
+    "next": "16.2.2",
+    "react": "19.2.4",
+    "react-dom": "19.2.4"
+  }
+}

@@ -1,0 +1,3 @@
+# If someone runs `npm install` at repo root (marker package.json only)
+/node_modules
+/package-lock.json
