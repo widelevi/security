@@ -1,8 +1,8 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #050811;
+  --foreground: #ededed;
 }
 
 @theme inline {
@@ -12,15 +12,10 @@
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
 html {
   background: #050811;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-text-size-adjust: 100%;
 }
 
 html::before {
@@ -29,7 +24,7 @@ html::before {
   inset: 0;
   z-index: -1;
   background: linear-gradient(to bottom, #050811, #090f1f, #050811);
-  will-change: transform;          /* promoted to its own GPU layer */
+  will-change: transform;
   pointer-events: none;
 }
 
@@ -37,4 +32,25 @@ body {
   background: none;
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
+  overflow-x: hidden;
+}
+
+/* Prevent iOS zoom on input focus (font-size < 16px triggers zoom) */
+input[type="number"],
+input[type="text"],
+select,
+textarea {
+  font-size: 16px !important;
+}
+
+/* Smooth scrolling on iOS */
+* {
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Safe area for notched phones */
+@supports (padding-bottom: env(safe-area-inset-bottom)) {
+  body {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
 }

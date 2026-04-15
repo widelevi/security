@@ -7,17 +7,17 @@ import dynamic from "next/dynamic";
 
 const EggLottery = dynamic(() => import("./components/EggLottery"), { ssr: false });
 
-const LOCATION_OPTIONS: Location[] = ["אדום", "כחול", "רחבה", "ליווי", "חופשי"];
+const LOCATION_OPTIONS: Location[] = ["\u05D0\u05D3\u05D5\u05DD", "\u05DB\u05D7\u05D5\u05DC", "\u05E8\u05D7\u05D1\u05D4", "\u05DC\u05D9\u05D5\u05D5\u05D9", "\u05D7\u05D5\u05E4\u05E9\u05D9"];
 const LOCATION_BOOKMARK_CLASSES: Record<Location, string> = {
-  אדום: "bg-red-700",
-  כחול: "bg-blue-700",
-  רחבה: "bg-yellow-600",
-  ליווי: "bg-orange-500",
-  חופשי: "bg-emerald-700",
+  "\u05D0\u05D3\u05D5\u05DD": "bg-red-700",
+  "\u05DB\u05D7\u05D5\u05DC": "bg-blue-700",
+  "\u05E8\u05D7\u05D1\u05D4": "bg-yellow-600",
+  "\u05DC\u05D9\u05D5\u05D5\u05D9": "bg-orange-500",
+  "\u05D7\u05D5\u05E4\u05E9\u05D9": "bg-emerald-700",
 };
 
 function isFreeLike(station: Location): boolean {
-  return station === "חופשי" || station === "ליווי";
+  return station === "\u05D7\u05D5\u05E4\u05E9\u05D9" || station === "\u05DC\u05D9\u05D5\u05D5\u05D9";
 }
 
 export default function Home() {
@@ -26,7 +26,7 @@ export default function Home() {
   const [shortGuards, setShortGuards] = useState<number>(2);
   const [afternoonIncomingGuards, setAfternoonIncomingGuards] = useState<number>(0);
   const [userLength, setUserLength] = useState<GuardLength>("long");
-  const [startingPosition, setStartingPosition] = useState<Location>("אדום");
+  const [startingPosition, setStartingPosition] = useState<Location>("\u05D0\u05D3\u05D5\u05DD");
   const [rows, setRows] = useState<RotationRow[]>([]);
   const [error, setError] = useState<string>("");
   const [useLottery, setUseLottery] = useState<boolean>(false);
@@ -45,27 +45,25 @@ export default function Home() {
   const isAllGuardsIdentical = allGuardsIdentical(longGuards, shortGuards, afternoonIncomingGuards, shiftType, userLength);
   const totalGuards = isAllGuardsIdentical ? longGuards : longGuards + shortGuards;
   const availableStartOptions = LOCATION_OPTIONS.filter((loc) => {
-    if (loc === "רחבה" && isPlazaDisabled) {
+    if (loc === "\u05E8\u05D7\u05D1\u05D4" && isPlazaDisabled) {
       return false;
     }
-    if (loc === "ליווי" && isEscortDisabled) {
+    if (loc === "\u05DC\u05D9\u05D5\u05D5\u05D9" && isEscortDisabled) {
       return false;
     }
     return true;
   });
 
   useEffect(() => {
-    if ((isPlazaDisabled && startingPosition === "רחבה") || (isEscortDisabled && startingPosition === "ליווי")) {
-      setStartingPosition("אדום");
+    if ((isPlazaDisabled && startingPosition === "\u05E8\u05D7\u05D1\u05D4") || (isEscortDisabled && startingPosition === "\u05DC\u05D9\u05D5\u05D5\u05D9")) {
+      setStartingPosition("\u05D0\u05D3\u05D5\u05DD");
     }
   }, [isPlazaDisabled, isEscortDisabled, startingPosition]);
 
-  // Clear lottery results when guard configuration changes
   useEffect(() => {
     setLotteryResults(null);
   }, [shiftType, longGuards, shortGuards, afternoonIncomingGuards, userLength]);
 
-  // Clear lottery results when lottery mode is disabled
   useEffect(() => {
     if (!useLottery) {
       setLotteryResults(null);
@@ -112,7 +110,6 @@ export default function Home() {
     setError("");
     try {
       if (useLottery && guardNames.some(name => name.trim())) {
-        // Clear previous lottery results when starting a new lottery
         setLotteryResults(null);
         setShowAnimation(true);
         setTimeout(() => {
@@ -129,7 +126,6 @@ export default function Home() {
           useLottery: false,
         });
         setRows(rotation);
-        // Don't clear lottery results for regular calculations
       }
     } catch (err) {
       const message = err instanceof Error ? err.message : "Unknown error";
@@ -140,7 +136,6 @@ export default function Home() {
 
   function performLottery() {
     try {
-      // Get the number of guards on duty at the START of the shift
       const guardsOnDutyAtStart = getStartingGuardsCount(
         shiftType,
         longGuards,
@@ -149,23 +144,17 @@ export default function Home() {
         userLength
       );
 
-      // Get all available starting positions for that number of guards
       const availableStartPositions = getAvailablePositions(guardsOnDutyAtStart);
-
-      // Shuffle the starting positions
       const shuffledStartPositions = [...availableStartPositions].sort(() => Math.random() - 0.5);
 
-      // Assign guards to starting positions
-      // For each starting position, build the ACTUAL rotation to see where they end up
       const results: Record<string, { start: Location; end: Location }> = {};
       for (let i = 0; i < totalGuards; i++) {
         const guardName = guardNames[i]?.trim();
         const displayName = guardName || `Guard ${i + 1}`;
-        
+
         if (i < shuffledStartPositions.length) {
           const startPosition = shuffledStartPositions[i];
-          
-          // Build the actual rotation with this starting position
+
           const actualRotation = buildRotation({
             shiftType,
             longGuards,
@@ -176,9 +165,8 @@ export default function Home() {
             useLottery: false,
           });
 
-          // The ending position is the ACTUAL last station from the rotation engine
           const endPosition = actualRotation.length > 0 ? actualRotation[actualRotation.length - 1].station : startPosition;
-          
+
           results[displayName] = {
             start: startPosition,
             end: endPosition
@@ -189,7 +177,6 @@ export default function Home() {
       setLotteryResults(results);
       setShowReveal(false);
 
-      // Wait 2 seconds for suspense, then reveal
       setTimeout(() => {
         setShowReveal(true);
       }, 2000);
@@ -213,23 +200,23 @@ export default function Home() {
   }
 
   return (
-    <main className="min-h-screen px-4 py-8 text-cyan-100" style={{contain: 'layout'}}>
+    <main className="min-h-screen min-h-dvh px-3 py-4 text-cyan-100 sm:px-4 sm:py-8" style={{contain: 'layout'}}>
       <div className="mx-auto w-full max-w-5xl">
-        <div className="rounded-2xl border border-cyan-400/20 bg-[#0b1427]/95 p-5 shadow-sm md:p-8">
-          <header className="mb-6">
-            <h1 className="text-2xl font-bold tracking-tight text-cyan-200 md:text-3xl">Security Rotation Console</h1>
-            <p className="mt-2 text-sm text-cyan-100/70">
-                Shift planner for guards with dynamic 5/4/3 manpower transitions, with end-post finish priority front and center.
+        <div className="rounded-2xl border border-cyan-400/20 bg-[#0b1427]/95 p-3 shadow-sm sm:p-5 md:p-8">
+          <header className="mb-4 sm:mb-6">
+            <h1 className="text-xl font-bold tracking-tight text-cyan-200 sm:text-2xl md:text-3xl">Security Rotation Console</h1>
+            <p className="mt-1.5 text-xs text-cyan-100/70 sm:text-sm">
+              Shift planner for guards with dynamic 5/4/3 manpower transitions.
             </p>
           </header>
 
           <section className="grid grid-cols-1 gap-3 md:grid-cols-2">
             <label className="rounded-2xl border border-cyan-300/15 bg-white/5 p-3">
-              <span className="mb-2 block text-sm text-cyan-100/80">Shift Type</span>
+              <span className="mb-1.5 block text-xs text-cyan-100/80 sm:text-sm sm:mb-2">Shift Type</span>
               <select
                 value={shiftType}
                 onChange={(e) => setShiftType(e.target.value as ShiftType)}
-                className="w-full rounded-xl border border-cyan-300/30 bg-[#0b1427] px-3 py-3 text-base outline-none ring-cyan-300 transition focus:ring-2"
+                className="w-full rounded-xl border border-cyan-300/30 bg-[#0b1427] px-3 py-2.5 text-base outline-none ring-cyan-300 transition focus:ring-2"
               >
                 <option value="morning">Morning</option>
                 <option value="night">Night</option>
@@ -237,52 +224,52 @@ export default function Home() {
             </label>
 
             <label className="rounded-2xl border border-cyan-300/15 bg-white/5 p-3">
-              <span className="mb-2 block text-sm text-cyan-100/80">Your Shift Length</span>
+              <span className="mb-1.5 block text-xs text-cyan-100/80 sm:text-sm sm:mb-2">Your Shift Length</span>
               <select
                 value={userLength}
                 onChange={(e) => setUserLength(e.target.value as GuardLength)}
-                className="w-full rounded-xl border border-cyan-300/30 bg-[#0b1427] px-3 py-3 text-base outline-none ring-cyan-300 transition focus:ring-2"
+                className="w-full rounded-xl border border-cyan-300/30 bg-[#0b1427] px-3 py-2.5 text-base outline-none ring-cyan-300 transition focus:ring-2"
               >
                 <option value="long">Long</option>
                 <option value="short">Short</option>
               </select>
             </label>
 
-            <div className="md:col-span-2 flex flex-wrap items-start gap-3">
-              <label className="w-fit rounded-2xl border border-cyan-300/15 bg-white/5 p-3">
-                <span className="mb-2 block text-sm text-cyan-100/80">Long Guards</span>
+            <div className="md:col-span-2 flex flex-wrap items-start gap-2 sm:gap-3">
+              <label className="flex-1 min-w-[7rem] rounded-2xl border border-cyan-300/15 bg-white/5 p-3">
+                <span className="mb-1.5 block text-xs text-cyan-100/80 sm:text-sm sm:mb-2">Long Guards</span>
                 <input
                   type="number"
                   min={0}
                   max={5}
                   value={longGuards}
                   onChange={(e) => setLongGuards(Number(e.target.value))}
-                  className="w-24 rounded-xl border border-cyan-300/30 bg-[#0b1427] px-3 py-3 text-base outline-none ring-cyan-300 transition focus:ring-2"
+                  className="w-full rounded-xl border border-cyan-300/30 bg-[#0b1427] px-3 py-2.5 text-base outline-none ring-cyan-300 transition focus:ring-2"
                 />
               </label>
 
-              <label className="w-fit rounded-2xl border border-cyan-300/15 bg-white/5 p-3">
-                <span className="mb-2 block text-sm text-cyan-100/80">Short Guards</span>
+              <label className="flex-1 min-w-[7rem] rounded-2xl border border-cyan-300/15 bg-white/5 p-3">
+                <span className="mb-1.5 block text-xs text-cyan-100/80 sm:text-sm sm:mb-2">Short Guards</span>
                 <input
                   type="number"
                   min={0}
                   max={5}
                   value={shortGuards}
                   onChange={(e) => setShortGuards(Number(e.target.value))}
-                  className="w-24 rounded-xl border border-cyan-300/30 bg-[#0b1427] px-3 py-3 text-base outline-none ring-cyan-300 transition focus:ring-2"
+                  className="w-full rounded-xl border border-cyan-300/30 bg-[#0b1427] px-3 py-2.5 text-base outline-none ring-cyan-300 transition focus:ring-2"
                 />
               </label>
 
               {showAfternoonGuardsInput && (
-                <label className="w-fit rounded-2xl border border-cyan-300/15 bg-white/5 p-3">
-                  <span className="mb-2 block text-sm text-cyan-100/80">Afternoon Guards</span>
+                <label className="flex-1 min-w-[7rem] rounded-2xl border border-cyan-300/15 bg-white/5 p-3">
+                  <span className="mb-1.5 block text-xs text-cyan-100/80 sm:text-sm sm:mb-2">Afternoon</span>
                   <input
                     type="number"
                     min={0}
                     max={5}
                     value={afternoonIncomingGuards}
                     onChange={(e) => setAfternoonIncomingGuards(Number(e.target.value))}
-                    className="w-24 rounded-xl border border-cyan-300/30 bg-[#0b1427] px-3 py-3 text-base outline-none ring-cyan-300 transition focus:ring-2"
+                    className="w-full rounded-xl border border-cyan-300/30 bg-[#0b1427] px-3 py-2.5 text-base outline-none ring-cyan-300 transition focus:ring-2"
                   />
                 </label>
               )}
@@ -297,16 +284,16 @@ export default function Home() {
                   className="h-5 w-5 rounded border-cyan-300/30 bg-[#0b1427] cursor-pointer accent-cyan-400"
                 />
                 <div className="flex-1">
-                  <span className="block text-sm font-semibold text-cyan-100">🎰 Roulette Mode</span>
-                  <span className="block text-xs text-cyan-100/60">All guards are identical - randomly assign positions for each time slot</span>
+                  <span className="block text-sm font-semibold text-cyan-100">Roulette Mode</span>
+                  <span className="block text-xs text-cyan-100/60">Randomly assign positions for each time slot</span>
                 </div>
               </label>
             )}
 
             {useLottery && isAllGuardsIdentical && (
-              <div className="w-full rounded-2xl border border-cyan-300/15 bg-white/5 p-4 md:col-span-2">
-                <span className="mb-3 block text-sm font-semibold text-cyan-100">Guard Names</span>
-                <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 md:grid-cols-3">
+              <div className="w-full rounded-2xl border border-cyan-300/15 bg-white/5 p-3 sm:p-4 md:col-span-2">
+                <span className="mb-2 block text-sm font-semibold text-cyan-100 sm:mb-3">Guard Names</span>
+                <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
                   {Array.from({ length: totalGuards }).map((_, index) => (
                     <input
                       key={`guard-${index}`}
@@ -318,7 +305,7 @@ export default function Home() {
                         newNames[index] = e.target.value;
                         setGuardNames(newNames);
                       }}
-                      className="rounded-xl border border-cyan-300/30 bg-[#0b1427] px-3 py-2 text-sm outline-none ring-cyan-300 transition focus:ring-2 text-cyan-100"
+                      className="rounded-xl border border-cyan-300/30 bg-[#0b1427] px-3 py-2 text-base outline-none ring-cyan-300 transition focus:ring-2 text-cyan-100"
                     />
                   ))}
                 </div>
@@ -326,100 +313,85 @@ export default function Home() {
             )}
 
             <label className={`w-full rounded-2xl border border-cyan-300/15 bg-white/5 p-3 md:mx-auto md:w-fit md:col-span-2 ${useLottery ? "opacity-50 pointer-events-none" : ""}`}>
-              <span className="mb-2 block text-sm text-cyan-100/80">Starting Position</span>
-              <div className="flex flex-wrap justify-center gap-2 pb-1 md:gap-3">
-                {LOCATION_OPTIONS.map((loc) => (
-                  (() => {
-                    const isDisabled =
-                      (loc === "רחבה" && isPlazaDisabled) || (loc === "ליווי" && isEscortDisabled);
-                    const isSelected = startingPosition === loc;
-                    return (
-                  <button
-                    key={loc}
-                    type="button"
-                    onClick={() => {
-                      if (!isDisabled) {
-                        setStartingPosition(loc);
+              <span className="mb-1.5 block text-xs text-cyan-100/80 sm:text-sm sm:mb-2">Starting Position</span>
+              <div className="grid grid-cols-3 gap-1.5 sm:flex sm:flex-wrap sm:justify-center sm:gap-2 md:gap-3 pb-1">
+                {LOCATION_OPTIONS.map((loc) => {
+                  const isDisabled =
+                    (loc === "\u05E8\u05D7\u05D1\u05D4" && isPlazaDisabled) || (loc === "\u05DC\u05D9\u05D5\u05D5\u05D9" && isEscortDisabled);
+                  const isSelected = startingPosition === loc;
+                  return (
+                    <button
+                      key={loc}
+                      type="button"
+                      onClick={() => {
+                        if (!isDisabled) {
+                          setStartingPosition(loc);
+                        }
+                      }}
+                      disabled={isDisabled}
+                      title={
+                        isDisabled
+                          ? loc === "\u05E8\u05D7\u05D1\u05D4"
+                            ? "\u05E8\u05D7\u05D1\u05D4 \u05D6\u05DE\u05D9\u05E0\u05D4 \u05E8\u05E7 \u05DB\u05E9\u05D9\u05E9 5 \u05E9\u05D5\u05DE\u05E8\u05D9\u05DD \u05D1\u05EA\u05D7\u05D9\u05DC\u05EA \u05D4\u05DE\u05E9\u05DE\u05E8\u05EA"
+                            : "\u05DC\u05D9\u05D5\u05D5\u05D9 \u05D6\u05DE\u05D9\u05DF \u05E8\u05E7 \u05DB\u05E9\u05D9\u05E9 4 \u05D0\u05D5 5 \u05E9\u05D5\u05DE\u05E8\u05D9\u05DD \u05D1\u05EA\u05D7\u05D9\u05DC\u05EA \u05D4\u05DE\u05E9\u05DE\u05E8\u05EA"
+                          : undefined
                       }
-                    }}
-                    disabled={isDisabled}
-                    title={
-                      isDisabled
-                        ? loc === "רחבה"
-                          ? "רחבה זמינה רק כשיש 5 שומרים בתחילת המשמרת"
-                          : "ליווי זמין רק כשיש 4 או 5 שומרים בתחילת המשמרת"
-                        : undefined
-                    }
-                    className={`relative min-w-[5.5rem] rounded-xl border px-3 py-3 text-sm focus:outline-none active:scale-95 md:min-w-[6.75rem] md:px-4 md:text-base ${
-                      isDisabled
-                        ? "cursor-not-allowed border-zinc-600/70 bg-zinc-700/25 text-zinc-400"
-                        : isSelected
-                        ? "border-cyan-300 bg-cyan-400/20"
-                        : "border-cyan-300/30 bg-[#0b1427] hover:bg-cyan-900/20"
-                    }`}
-                  >
-                    <span
-                      aria-hidden="true"
-                      className={`absolute right-1.5 top-1.5 h-2.5 w-2.5 rounded-sm ${
-                        isDisabled ? "bg-zinc-500" : LOCATION_BOOKMARK_CLASSES[loc]
+                      className={`relative rounded-xl border px-2.5 py-2.5 text-sm focus:outline-none active:scale-95 sm:min-w-[5.5rem] sm:px-3 sm:py-3 md:min-w-[6.75rem] md:px-4 md:text-base ${
+                        isDisabled
+                          ? "cursor-not-allowed border-zinc-600/70 bg-zinc-700/25 text-zinc-400"
+                          : isSelected
+                          ? "border-cyan-300 bg-cyan-400/20"
+                          : "border-cyan-300/30 bg-[#0b1427] hover:bg-cyan-900/20"
                       }`}
-                    />
-                    {loc}
-                  </button>
-                    );
-                  })()
-                ))}
+                    >
+                      <span
+                        aria-hidden="true"
+                        className={`absolute right-1 top-1 h-2 w-2 rounded-sm sm:right-1.5 sm:top-1.5 sm:h-2.5 sm:w-2.5 ${
+                          isDisabled ? "bg-zinc-500" : LOCATION_BOOKMARK_CLASSES[loc]
+                        }`}
+                      />
+                      {loc}
+                    </button>
+                  );
+                })}
               </div>
             </label>
           </section>
 
-          <div className="mt-6 grid gap-4 lg:grid-cols-[1.7fr_auto]">
-            <div className="rounded-[1.75rem] border border-cyan-400/20 bg-slate-950/85 p-5 shadow-sm">
-              <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-                <div>
-                  <h2 className="text-lg font-semibold text-cyan-100">Finish Post Priority</h2>
-                </div>
-                <span className="rounded-full bg-cyan-500/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-cyan-100/80 ring-1 ring-cyan-300/20">
-                  Finish post first
-                </span>
-              </div>
+          <button
+            type="button"
+            onClick={handleCalculate}
+            className="mt-4 w-full rounded-2xl border border-cyan-200/50 bg-cyan-400/20 px-4 py-3 text-sm font-semibold text-cyan-100 shadow-sm hover:bg-cyan-300/25 active:scale-[0.98] sm:w-auto sm:px-6"
+          >
+            Calculate Rotation
+          </button>
 
-              <div className="mt-4 grid gap-3 sm:grid-cols-3">
-                <div className="sm:col-span-2 rounded-[2rem] bg-gradient-to-br from-cyan-500/20 via-slate-950/70 to-emerald-500/15 p-5 ring-1 ring-cyan-300/15 shadow-sm">
-                  <p className="text-xs uppercase tracking-[0.24em] text-cyan-100/60">Finishes Free</p>
-                  <p className="mt-3 text-3xl font-extrabold text-cyan-100 leading-tight text-center sm:text-4xl">
-                    {startsThatFinishFree.length > 0 ? (
-                      startsThatFinishFree.map((station, index) => (
-                        <span key={station}>
-                          <span className={station === "חופשי" ? "font-serif" : ""}>
-                            {station}
-                          </span>
-                          {index < startsThatFinishFree.length - 1 ? " & " : ""}
-                        </span>
-                      ))
-                    ) : (
-                      "None"
-                    )}
-                  </p>
-                </div>
-                <div className="rounded-3xl bg-[#06121f] p-4 ring-1 ring-cyan-300/10">
-                  <p className="text-xs uppercase tracking-[0.24em] text-cyan-100/50">Field Posts</p>
-                  <p className="mt-3 text-3xl font-semibold text-cyan-100">{rows.length > 0 ? totalFieldPosts : "N/A"}</p>
-                </div>
-              </div>
+          <div className="mt-4 grid gap-2 grid-cols-2 sm:grid-cols-3 sm:gap-3">
+            <div className="col-span-2 sm:col-span-2 rounded-2xl bg-gradient-to-br from-cyan-500/15 via-slate-950/70 to-emerald-500/10 p-3 ring-1 ring-cyan-300/15 sm:p-5">
+              <p className="text-[10px] uppercase tracking-[0.2em] text-cyan-100/60 sm:text-xs">Finishes Free</p>
+              <p className="mt-1.5 text-lg font-extrabold text-cyan-100 leading-tight text-center sm:mt-3 sm:text-3xl md:text-4xl">
+                {startsThatFinishFree.length > 0 ? (
+                  startsThatFinishFree.map((station, index) => (
+                    <span key={station}>
+                      <span className={station === "\u05D7\u05D5\u05E4\u05E9\u05D9" ? "font-serif" : ""}>
+                        {station}
+                      </span>
+                      {index < startsThatFinishFree.length - 1 ? " & " : ""}
+                    </span>
+                  ))
+                ) : (
+                  "None"
+                )}
+              </p>
             </div>
-
-            <button
-              type="button"
-              onClick={handleCalculate}
-              className="h-fit rounded-2xl border border-cyan-200/50 bg-cyan-400/20 px-4 py-2.5 text-sm font-semibold text-cyan-100 shadow-sm hover:bg-cyan-300/25 active:scale-[0.98]"
-            >
-              Calculate Rotation
-            </button>
+            <div className="col-span-2 sm:col-span-1 rounded-2xl bg-[#06121f] p-3 ring-1 ring-cyan-300/10">
+              <p className="text-[10px] uppercase tracking-[0.2em] text-cyan-100/50 sm:text-xs">Field Posts</p>
+              <p className="mt-1.5 text-lg font-semibold text-cyan-100 sm:mt-3 sm:text-3xl">{rows.length > 0 ? totalFieldPosts : "N/A"}</p>
+            </div>
           </div>
 
           {error && (
-            <p className="mt-4 rounded-xl border border-red-400/30 bg-red-400/10 px-3 py-2 text-sm text-red-200">
+            <p className="mt-3 rounded-xl border border-red-400/30 bg-red-400/10 px-3 py-2 text-sm text-red-200">
               {error}
             </p>
           )}
@@ -435,87 +407,59 @@ export default function Home() {
           )}
         </div>
 
-        {/* Show lottery results after accepting (when modal is closed) */}
         {lotteryResults && Object.keys(lotteryResults).length > 0 && !showAnimation && (
-          <section className="mt-6 rounded-3xl border border-emerald-400/20 bg-gradient-to-br from-slate-950/80 via-slate-950/70 to-cyan-950/90 p-4 shadow-sm md:p-6">
-            <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-              <div>
-                <h2 className="text-xl font-semibold text-emerald-200">🎯 Guard Finish Posts</h2>
-                <p className="mt-1 text-sm text-emerald-100/70">Highlighting each guard’s final station with a bold finish-card view.</p>
-              </div>
-              <div className="rounded-2xl border border-emerald-300/30 bg-emerald-500/10 px-4 py-2 text-sm font-semibold text-emerald-100 shadow-sm">
-                Actual end position shown for every guard
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-              {Object.entries(lotteryResults).map(([guardName, assignment]) => {
-                return (
-                  <div key={guardName} className="relative overflow-hidden rounded-[1.75rem] border border-cyan-300/20 bg-slate-950/80 p-5 shadow-sm">
-                    <div className="pointer-events-none absolute inset-x-0 top-0 h-24" />
-                    <div className="relative z-10 flex items-center justify-between gap-4">
-                      <span className="text-lg font-semibold text-white">{guardName}</span>
-                      <span className="rounded-full bg-emerald-400/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-emerald-100/80 ring-1 ring-emerald-300/20">
-                        Finish Post
-                      </span>
+          <section className="mt-3 rounded-2xl border border-emerald-400/20 bg-slate-950/80 p-3 shadow-sm sm:mt-6 sm:rounded-3xl sm:p-6">
+            <h2 className="text-base font-semibold text-emerald-200 mb-2.5 sm:text-xl sm:mb-4">Guard Finish Posts</h2>
+            <div className="flex flex-col gap-2 sm:grid sm:grid-cols-2 sm:gap-3">
+              {Object.entries(lotteryResults).map(([guardName, assignment]) => (
+                <div key={guardName} className="flex items-center justify-between rounded-xl border border-cyan-300/10 bg-slate-950/60 px-3 py-2 gap-2 sm:rounded-2xl sm:p-4 sm:flex-col sm:items-stretch">
+                  <span className="font-semibold text-white text-sm truncate min-w-0 sm:text-lg sm:mb-2">{guardName}</span>
+                  <div className="flex items-center gap-1.5 flex-shrink-0 sm:gap-3">
+                    <div className={`rounded-lg px-2 py-0.5 text-xs font-bold text-white sm:flex-1 sm:rounded-2xl sm:px-4 sm:py-2 sm:text-sm ${LOCATION_BOOKMARK_CLASSES[assignment.start]}`}>
+                      {assignment.start}
                     </div>
-
-                    <div className="mt-4 grid gap-3 sm:grid-cols-2">
-                      <div className="rounded-3xl border border-cyan-300/15 bg-cyan-500/10 p-4">
-                        <p className="text-xs uppercase tracking-[0.24em] text-cyan-100/60">Starts at</p>
-                        <div className={`mt-3 rounded-3xl px-4 py-3 text-sm font-semibold text-white ${LOCATION_BOOKMARK_CLASSES[assignment.start]}`}>
-                          {assignment.start}
-                        </div>
-                      </div>
-
-                      <div className="rounded-3xl border border-emerald-300/15 bg-emerald-500/10 p-4">
-                        <p className="text-xs uppercase tracking-[0.24em] text-emerald-100/60">Finishes at</p>
-                        <div className={`mt-3 rounded-3xl px-4 py-4 text-base font-extrabold text-white ${LOCATION_BOOKMARK_CLASSES[assignment.end]}`}>
-                          {assignment.end}
-                        </div>
-                      </div>
+                    <span className="text-emerald-300/50 text-[10px] font-bold">{"\u2192"}</span>
+                    <div className={`rounded-lg px-2 py-0.5 text-xs font-extrabold text-white sm:flex-1 sm:rounded-2xl sm:px-4 sm:py-2.5 sm:text-base ${LOCATION_BOOKMARK_CLASSES[assignment.end]}`}>
+                      {assignment.end}
                     </div>
                   </div>
-                );
-              })}
+                </div>
+              ))}
             </div>
-
-            <p className="mt-4 text-xs uppercase tracking-[0.18em] text-emerald-100/60">Results based on actual rotation calculation</p>
           </section>
         )}
 
-        <section className="mt-6 rounded-2xl border border-cyan-400/20 bg-[#0b1427]/95 p-4 shadow-sm md:p-6">
-          <h2 className="mb-3 text-lg font-semibold text-cyan-200">Rotation Timeline</h2>
-          <p className="mb-4 text-sm text-cyan-100/70">Use this schedule as the operational timeline; the finish-post summary above is the priority output.</p>
-          <div className="overflow-x-auto rounded-xl border border-cyan-300/20">
-            <table className="w-full min-w-[540px] border-collapse text-sm">
+        <section className="mt-3 rounded-2xl border border-cyan-400/20 bg-[#0b1427]/95 p-3 shadow-sm sm:mt-6 sm:p-6">
+          <h2 className="mb-2 text-base font-semibold text-cyan-200 sm:mb-3 sm:text-lg">Rotation Timeline</h2>
+          <div className="-mx-3 sm:mx-0 overflow-x-auto rounded-xl border border-cyan-300/20">
+            <table className="w-full min-w-[420px] border-collapse text-xs sm:text-sm">
               <thead className="bg-cyan-500/10 text-cyan-200">
                 <tr>
-                  <th className="px-3 py-3 text-left font-semibold">Time</th>
-                  <th className="px-3 py-3 text-left font-semibold">Station</th>
-                  <th className="px-3 py-3 text-left font-semibold">Guards On Duty</th>
+                  <th className="px-2 py-2 text-left font-semibold sm:px-3 sm:py-3">Time</th>
+                  <th className="px-2 py-2 text-left font-semibold sm:px-3 sm:py-3">Station</th>
+                  <th className="px-2 py-2 text-left font-semibold sm:px-3 sm:py-3">On Duty</th>
                 </tr>
               </thead>
               <tbody>
                 {rows.length === 0 ? (
                   <tr>
-                    <td colSpan={3} className="px-3 py-6 text-center text-cyan-100/70">
-                      Press <span className="font-semibold text-cyan-300">Calculate Rotation</span> to view schedule.
+                    <td colSpan={3} className="px-3 py-4 text-center text-cyan-100/70 text-xs sm:py-6 sm:text-sm">
+                      Press <span className="font-semibold text-cyan-300">Calculate</span> to view schedule.
                     </td>
                   </tr>
                 ) : (
                   rows.map((row, index) => (
                     <tr
                       key={`${row.timeRange}-${index}`}
-                      className="border-t border-cyan-300/10 odd:bg-[#0c182e]/70 even:bg-[#0a1528]/70 hover:bg-cyan-700/10"
+                      className="border-t border-cyan-300/10 odd:bg-[#0c182e]/70 even:bg-[#0a1528]/70"
                     >
-                      <td className="px-3 py-3">{row.timeRange}</td>
-                      <td className="px-3 py-3">
-                        <div className={`rounded-lg border border-cyan-200/30 bg-cyan-400/10 px-2 py-1 ${LOCATION_BOOKMARK_CLASSES[row.station]}`}>
+                      <td className="px-2 py-2 sm:px-3 sm:py-3 whitespace-nowrap">{row.timeRange}</td>
+                      <td className="px-2 py-2 sm:px-3 sm:py-3">
+                        <div className={`rounded-md border border-cyan-200/30 bg-cyan-400/10 px-1.5 py-0.5 text-center sm:rounded-lg sm:px-2 sm:py-1 ${LOCATION_BOOKMARK_CLASSES[row.station]}`}>
                           {row.station}
                         </div>
                       </td>
-                      <td className="px-3 py-3">{row.guardsOnDuty}</td>
+                      <td className="px-2 py-2 sm:px-3 sm:py-3 text-center">{row.guardsOnDuty}</td>
                     </tr>
                   ))
                 )}
