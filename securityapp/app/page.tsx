@@ -213,13 +213,13 @@ export default function Home() {
   }
 
   return (
-    <main className="min-h-screen bg-gradient-to-b from-[#050811] via-[#090f1f] to-[#050811] px-4 py-8 text-cyan-100">
+    <main className="min-h-screen px-4 py-8 text-cyan-100" style={{contain: 'layout'}}>
       <div className="mx-auto w-full max-w-5xl">
-        <div className="rounded-2xl border border-cyan-400/20 bg-white/5 p-5 shadow-[0_0_45px_rgba(0,180,255,0.15)] backdrop-blur-xl md:p-8">
+        <div className="rounded-2xl border border-cyan-400/20 bg-white/5 p-5 shadow-sm backdrop-blur-sm md:p-8">
           <header className="mb-6">
             <h1 className="text-2xl font-bold tracking-tight text-cyan-200 md:text-3xl">Security Rotation Console</h1>
             <p className="mt-2 text-sm text-cyan-100/70">
-              Shift planner for guards with dynamic 5/4/3 manpower transitions.
+                Shift planner for guards with dynamic 5/4/3 manpower transitions, with end-post finish priority front and center.
             </p>
           </header>
 
@@ -350,11 +350,11 @@ export default function Home() {
                           : "ליווי זמין רק כשיש 4 או 5 שומרים בתחילת המשמרת"
                         : undefined
                     }
-                    className={`relative min-w-[5.5rem] rounded-xl border px-3 py-3 text-sm transition focus:outline-none active:scale-95 md:min-w-[6.75rem] md:px-4 md:text-base ${
+                    className={`relative min-w-[5.5rem] rounded-xl border px-3 py-3 text-sm focus:outline-none active:scale-95 md:min-w-[6.75rem] md:px-4 md:text-base ${
                       isDisabled
                         ? "cursor-not-allowed border-zinc-600/70 bg-zinc-700/25 text-zinc-400"
                         : isSelected
-                        ? "border-cyan-300 bg-cyan-400/20 shadow-[0_0_20px_rgba(34,211,238,0.45)]"
+                        ? "border-cyan-300 bg-cyan-400/20"
                         : "border-cyan-300/30 bg-[#0b1427] hover:bg-cyan-900/20"
                     }`}
                   >
@@ -373,27 +373,46 @@ export default function Home() {
             </label>
           </section>
 
-          <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <div className="space-y-1 text-sm text-cyan-100/80">
-              <p>
-                Recommended Start:{" "}
-                <span className="font-semibold text-cyan-300">{recommendedStart ?? "N/A"}</span>
-              </p>
-              <p>
-                Total Field Posts:{" "}
-                <span className="font-semibold text-cyan-300">{rows.length > 0 ? totalFieldPosts : "N/A"}</span>
-              </p>
-              <p>
-                Finishes Free:{" "}
-                <span className="font-semibold text-cyan-300">
-                  {startsThatFinishFree.length > 0 ? startsThatFinishFree.join(", ") : "None"}
+          <div className="mt-6 grid gap-4 lg:grid-cols-[1.7fr_auto]">
+            <div className="rounded-[1.75rem] border border-cyan-400/20 bg-slate-950/85 p-5 shadow-sm">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+                <div>
+                  <h2 className="text-lg font-semibold text-cyan-100">Finish Post Priority</h2>
+                </div>
+                <span className="rounded-full bg-cyan-500/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-cyan-100/80 ring-1 ring-cyan-300/20">
+                  Finish post first
                 </span>
-              </p>
+              </div>
+
+              <div className="mt-4 grid gap-3 sm:grid-cols-3">
+                <div className="sm:col-span-2 rounded-[2rem] bg-gradient-to-br from-cyan-500/20 via-slate-950/70 to-emerald-500/15 p-5 ring-1 ring-cyan-300/15 shadow-sm">
+                  <p className="text-xs uppercase tracking-[0.24em] text-cyan-100/60">Finishes Free</p>
+                  <p className="mt-3 text-3xl font-extrabold text-cyan-100 leading-tight text-center sm:text-4xl">
+                    {startsThatFinishFree.length > 0 ? (
+                      startsThatFinishFree.map((station, index) => (
+                        <span key={station}>
+                          <span className={station === "חופשי" ? "font-serif" : ""}>
+                            {station}
+                          </span>
+                          {index < startsThatFinishFree.length - 1 ? " & " : ""}
+                        </span>
+                      ))
+                    ) : (
+                      "None"
+                    )}
+                  </p>
+                </div>
+                <div className="rounded-3xl bg-[#06121f] p-4 ring-1 ring-cyan-300/10">
+                  <p className="text-xs uppercase tracking-[0.24em] text-cyan-100/50">Field Posts</p>
+                  <p className="mt-3 text-3xl font-semibold text-cyan-100">{rows.length > 0 ? totalFieldPosts : "N/A"}</p>
+                </div>
+              </div>
             </div>
+
             <button
               type="button"
               onClick={handleCalculate}
-              className="rounded-2xl border border-cyan-200/50 bg-cyan-400/20 px-5 py-3 font-semibold text-cyan-100 shadow-[0_0_30px_rgba(0,195,255,0.4)] transition hover:bg-cyan-300/25 active:scale-[0.98]"
+              className="h-fit rounded-2xl border border-cyan-200/50 bg-cyan-400/20 px-4 py-2.5 text-sm font-semibold text-cyan-100 shadow-sm hover:bg-cyan-300/25 active:scale-[0.98]"
             >
               Calculate Rotation
             </button>
@@ -418,27 +437,41 @@ export default function Home() {
 
         {/* Show lottery results after accepting (when modal is closed) */}
         {lotteryResults && Object.keys(lotteryResults).length > 0 && !showAnimation && (
-          <section className="mt-6 rounded-2xl border border-emerald-400/20 bg-white/5 p-4 shadow-[0_0_50px_rgba(16,185,129,0.12)] backdrop-blur-xl md:p-6">
-            <h2 className="mb-4 text-lg font-semibold text-emerald-300">🎰 Lottery Results - Guard Assignments</h2>
-            <div className="grid grid-cols-1 gap-3">
+          <section className="mt-6 rounded-3xl border border-emerald-400/20 bg-gradient-to-br from-slate-950/80 via-slate-950/70 to-cyan-950/90 p-4 shadow-sm backdrop-blur-sm md:p-6">
+            <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+              <div>
+                <h2 className="text-xl font-semibold text-emerald-200">🎯 Guard Finish Posts</h2>
+                <p className="mt-1 text-sm text-emerald-100/70">Highlighting each guard’s final station with a bold finish-card view.</p>
+              </div>
+              <div className="rounded-2xl border border-emerald-300/30 bg-emerald-500/10 px-4 py-2 text-sm font-semibold text-emerald-100 shadow-sm">
+                Actual end position shown for every guard
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               {Object.entries(lotteryResults).map(([guardName, assignment]) => {
                 return (
-                  <div key={guardName} className="rounded-lg border border-emerald-300/30 bg-emerald-500/10 p-4">
-                    <div className="flex items-center justify-between">
-                      <span className="font-semibold text-emerald-100 text-lg">{guardName}</span>
-                      <div className="flex items-center gap-2">
-                        <div className="flex flex-col items-center">
-                          <span className="text-xs text-emerald-100/60 mb-1">Starts</span>
-                          <div className={`rounded-lg border border-cyan-200/30 px-4 py-2 text-sm font-bold text-white ${LOCATION_BOOKMARK_CLASSES[assignment.start]}`}>
-                            {assignment.start}
-                          </div>
+                  <div key={guardName} className="relative overflow-hidden rounded-[1.75rem] border border-cyan-300/20 bg-slate-950/80 p-5 shadow-sm">
+                    <div className="pointer-events-none absolute inset-x-0 top-0 h-24" />
+                    <div className="relative z-10 flex items-center justify-between gap-4">
+                      <span className="text-lg font-semibold text-white">{guardName}</span>
+                      <span className="rounded-full bg-emerald-400/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-emerald-100/80 ring-1 ring-emerald-300/20">
+                        Finish Post
+                      </span>
+                    </div>
+
+                    <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                      <div className="rounded-3xl border border-cyan-300/15 bg-cyan-500/10 p-4">
+                        <p className="text-xs uppercase tracking-[0.24em] text-cyan-100/60">Starts at</p>
+                        <div className={`mt-3 rounded-3xl px-4 py-3 text-sm font-semibold text-white ${LOCATION_BOOKMARK_CLASSES[assignment.start]}`}>
+                          {assignment.start}
                         </div>
-                        <div className="text-emerald-300 font-bold text-xl">→</div>
-                        <div className="flex flex-col items-center">
-                          <span className="text-xs text-emerald-100/60 mb-1">Ends</span>
-                          <div className={`rounded-lg border border-cyan-200/30 px-4 py-2 text-sm font-bold text-white ${LOCATION_BOOKMARK_CLASSES[assignment.end]}`}>
-                            {assignment.end}
-                          </div>
+                      </div>
+
+                      <div className="rounded-3xl border border-emerald-300/15 bg-emerald-500/10 p-4">
+                        <p className="text-xs uppercase tracking-[0.24em] text-emerald-100/60">Finishes at</p>
+                        <div className={`mt-3 rounded-3xl px-4 py-4 text-base font-extrabold text-white ${LOCATION_BOOKMARK_CLASSES[assignment.end]}`}>
+                          {assignment.end}
                         </div>
                       </div>
                     </div>
@@ -446,12 +479,14 @@ export default function Home() {
                 );
               })}
             </div>
-            <p className="mt-4 text-xs text-emerald-100/60">Results based on actual rotation calculation</p>
+
+            <p className="mt-4 text-xs uppercase tracking-[0.18em] text-emerald-100/60">Results based on actual rotation calculation</p>
           </section>
         )}
 
-        <section className="mt-6 rounded-2xl border border-cyan-400/20 bg-white/5 p-4 shadow-[0_0_50px_rgba(0,170,255,0.12)] backdrop-blur-xl md:p-6">
-          <h2 className="mb-3 text-lg font-semibold text-cyan-200">Rotation Results</h2>
+        <section className="mt-6 rounded-2xl border border-cyan-400/20 bg-white/5 p-4 shadow-sm backdrop-blur-sm md:p-6">
+          <h2 className="mb-3 text-lg font-semibold text-cyan-200">Rotation Timeline</h2>
+          <p className="mb-4 text-sm text-cyan-100/70">Use this schedule as the operational timeline; the finish-post summary above is the priority output.</p>
           <div className="overflow-x-auto rounded-xl border border-cyan-300/20">
             <table className="w-full min-w-[540px] border-collapse text-sm">
               <thead className="bg-cyan-500/10 text-cyan-200">
@@ -472,13 +507,13 @@ export default function Home() {
                   rows.map((row, index) => (
                     <tr
                       key={`${row.timeRange}-${index}`}
-                      className="border-t border-cyan-300/10 transition odd:bg-[#0c182e]/70 even:bg-[#0a1528]/70 hover:bg-cyan-700/10"
+                      className="border-t border-cyan-300/10 odd:bg-[#0c182e]/70 even:bg-[#0a1528]/70 hover:bg-cyan-700/10"
                     >
                       <td className="px-3 py-3">{row.timeRange}</td>
                       <td className="px-3 py-3">
-                        <span className="rounded-lg border border-cyan-200/30 bg-cyan-400/10 px-2 py-1 shadow-[0_0_18px_rgba(56,189,248,0.28)]">
+                        <div className={`rounded-lg border border-cyan-200/30 bg-cyan-400/10 px-2 py-1 ${LOCATION_BOOKMARK_CLASSES[row.station]}`}>
                           {row.station}
-                        </span>
+                        </div>
                       </td>
                       <td className="px-3 py-3">{row.guardsOnDuty}</td>
                     </tr>
